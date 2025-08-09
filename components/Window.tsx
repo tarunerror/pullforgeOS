@@ -9,6 +9,12 @@ import Terminal from '@/apps/terminal/Terminal'
 import CodeEditor from '@/apps/code-editor/CodeEditor'
 import Chat from '@/apps/chat/Chat'
 import FileExplorer from '@/apps/file-explorer/FileExplorer'
+import GitHub from '@/apps/github/GitHub'
+import SmartSearch from '@/apps/smart-search/SmartSearch'
+import LivePreview from '@/apps/live-preview/LivePreview'
+import WorkflowAutomation from '@/apps/workflow/WorkflowAutomation'
+import AppStore from '@/apps/app-store/AppStore'
+import Browser from '@/apps/browser/Browser'
 
 interface WindowProps {
   windowData: WindowData
@@ -19,6 +25,12 @@ const componentMap = {
   'code-editor': CodeEditor,
   chat: Chat,
   'file-explorer': FileExplorer,
+  github: GitHub,
+  'smart-search': SmartSearch,
+  'live-preview': LivePreview,
+  'workflow': WorkflowAutomation,
+  'app-store': AppStore,
+  browser: Browser,
 }
 
 export default function Window({ windowData }: WindowProps) {

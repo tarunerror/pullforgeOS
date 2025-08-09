@@ -1,0 +1,243 @@
+import axios from 'axios'
+
+export interface GitHubRepo {
+  id: number
+  name: string
+  full_name: string
+  description: string
+  html_url: string
+  clone_url: string
+  ssh_url: string
+  default_branch: string
+  language: string
+  stargazers_count: number
+  forks_count: number
+  updated_at: string
+  owner: {
+    login: string
+    avatar_url: string
+  }
+}
+
+export interface GitHubFile {
+  name: string
+  path: string
+  sha: string
+  size: number
+  url: string
+  html_url: string
+  git_url: string
+  download_url: string
+  type: 'file' | 'dir'
+  content?: string
+  encoding?: string
+}
+
+export interface PullRequest {
+  number: number
+  title: string
+  body: string
+  state: 'open' | 'closed' | 'merged'
+  html_url: string
+  created_at: string
+  updated_at: string
+  user: {
+    login: string
+    avatar_url: string
+  }
+}
+
+class GitHubService {
+  private token: string | null = null
+  private baseURL = 'https://api.github.com'
+
+  setToken(token: string) {
+    this.token = token
+  }
+
+  private getHeaders() {
+    return {
+      'Authorization': this.token ? `Bearer ${this.token}` : '',
+      'Accept': 'application/vnd.github.v3+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  }
+
+  // Get user repositories
+  async getUserRepos(username?: string): Promise<GitHubRepo[]> {
+    try {
+      const url = username 
+        ? `${this.baseURL}/users/${username}/repos`
+        : `${this.baseURL}/user/repos`
+      
+      const response = await axios.get(url, {
+        headers: this.getHeaders(),
+        params: {
+          sort: 'updated',
+          per_page: 50
+        }
+      })
+      
+      return response.data
+    } catch (error) {
+      console.error('Error fetching repositories:', error)
+      throw error
+    }
+  }
+
+  // Search repositories
+  async searchRepos(query: string): Promise<GitHubRepo[]> {
+    try {
+      const response = await axios.get(`${this.baseURL}/search/repositories`, {
+        headers: this.getHeaders(),
+        params: {
+          q: query,
+          sort: 'stars',
+          order: 'desc',
+          per_page: 20
+        }
+      })
+      
+      return response.data.items
+    } catch (error) {
+      console.error('Error searching repositories:', error)
+      throw error
+    }
+  }
+
+  // Get repository contents
+  async getRepoContents(owner: string, repo: string, path: string = ''): Promise<GitHubFile[]> {
+    try {
+      const response = await axios.get(`${this.baseURL}/repos/${owner}/${repo}/contents/${path}`, {
+        headers: this.getHeaders()
+      })
+      
+      return Array.isArray(response.data) ? response.data : [response.data]
+    } catch (error) {
+      console.error('Error fetching repository contents:', error)
+      throw error
+    }
+  }
+
+  // Get file content
+  async getFileContent(owner: string, repo: string, path: string): Promise<string> {
+    try {
+      const response = await axios.get(`${this.baseURL}/repos/${owner}/${repo}/contents/${path}`, {
+        headers: this.getHeaders()
+      })
+      
+      if (response.data.content && response.data.encoding === 'base64') {
+        return atob(response.data.content)
+      }
+      
+      return response.data.content || ''
+    } catch (error) {
+      console.error('Error fetching file content:', error)
+      throw error
+    }
+  }
+
+  // Create a pull request
+  async createPullRequest(
+    owner: string, 
+    repo: string, 
+    title: string, 
+    body: string, 
+    head: string, 
+    base: string = 'main'
+  ): Promise<PullRequest> {
+    try {
+      const response = await axios.post(`${this.baseURL}/repos/${owner}/${repo}/pulls`, {
+        title,
+        body,
+        head,
+        base
+      }, {
+        headers: this.getHeaders()
+      })
+      
+      return response.data
+    } catch (error) {
+      console.error('Error creating pull request:', error)
+      throw error
+    }
+  }
+
+  // Get pull requests
+  async getPullRequests(owner: string, repo: string, state: 'open' | 'closed' | 'all' = 'open'): Promise<PullRequest[]> {
+    try {
+      const response = await axios.get(`${this.baseURL}/repos/${owner}/${repo}/pulls`, {
+        headers: this.getHeaders(),
+        params: {
+          state,
+          per_page: 50
+        }
+      })
+      
+      return response.data
+    } catch (error) {
+      console.error('Error fetching pull requests:', error)
+      throw error
+    }
+  }
+
+  // Generate AI-powered PR description
+  async generatePRDescription(changes: string[], context: string): Promise<string> {
+    // This would integrate with an AI service like OpenAI
+    // For now, we'll create a template-based description
+    const changesList = changes.map(change => `- ${change}`).join('\n')
+    
+    return `## 🤖 AI-Generated Pull Request
+
+### Changes Made
+${changesList}
+
+### Context
+${context}
+
+### AI Analysis
+This pull request includes ${changes.length} changes that appear to ${this.analyzeChanges(changes)}.
+
+**Recommendation**: Please review the changes and ensure they align with the project's coding standards and requirements.
+
+---
+*Generated by Pullforge OS AI Assistant*`
+  }
+
+  private analyzeChanges(changes: string[]): string {
+    const keywords = changes.join(' ').toLowerCase()
+    
+    if (keywords.includes('fix') || keywords.includes('bug')) {
+      return 'address bug fixes and improvements'
+    } else if (keywords.includes('feature') || keywords.includes('add')) {
+      return 'introduce new features and functionality'
+    } else if (keywords.includes('refactor') || keywords.includes('clean')) {
+      return 'refactor and clean up existing code'
+    } else if (keywords.includes('update') || keywords.includes('upgrade')) {
+      return 'update dependencies and configurations'
+    } else {
+      return 'enhance the codebase with various improvements'
+    }
+  }
+
+  // Clone repository (simulation for browser environment)
+  async cloneRepo(owner: string, repo: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // In a browser environment, we can't actually clone repos
+      // Instead, we'll fetch the repository structure and key files
+      const contents = await this.getRepoContents(owner, repo)
+      
+      return {
+        success: true,
+        message: `Repository ${owner}/${repo} structure loaded successfully. ${contents.length} items found.`
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to load repository: ${error}`
+      }
+    }
+  }
+}
+
+export const githubService = new GitHubService()

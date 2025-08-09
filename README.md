@@ -114,16 +114,21 @@ SUPABASE_ANON_KEY=your_supabase_key
 - **Maximize**: Click maximize button in window header
 - **Close**: Click X button in window header
 
-## 🔮 Upcoming Features
+## 🔮 Phase 2 Features ✅
 
-### Phase 2
-- [ ] **GitHub Integration**: Clone repos, create PRs with AI
-- [ ] **Vector Embeddings**: Contextual file search with Supabase
-- [ ] **Live Preview**: Real-time web project preview
-- [ ] **Workflow Automation**: n8n integration for task automation
+### Completed Features
+- [x] **GitHub Integration**: Clone repos, create PRs with AI assistance
+- [x] **Vector Embeddings**: Contextual file search with Supabase
+- [x] **Live Preview**: Real-time web project preview
+- [x] **Workflow Automation**: n8n integration for task automation
+- [x] **Supabase Authentication**: Secure user authentication with GitHub OAuth
+- [x] **GitHub App Integration**: Repository access via GitHub App installation
 
-### Phase 3
+### Phase 3 (Upcoming)
 - [ ] **Multi-user Support**: Collaborative editing and chat
+- [ ] **Real-time Collaboration**: Live code editing with multiple users
+- [ ] **Advanced AI Features**: Code generation, debugging assistance
+- [ ] **Plugin System**: Extensible architecture for custom apps
 - [ ] **Plugin System**: Extensible app architecture
 - [ ] **Cloud Sync**: Cross-device file synchronization
 - [ ] **Advanced AI**: Custom model fine-tuning

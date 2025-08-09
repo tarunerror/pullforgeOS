@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Code, Palette, FileText, Wrench, Sparkles } from 'lucide-react'
+import openRouterService from '@/services/openrouter'
 
 interface ChatProps {
   windowId: string
@@ -97,50 +98,60 @@ export default function Chat({ windowId }: ChatProps) {
     setInputMessage('')
     setIsLoading(true)
 
-    // Simulate AI response (in real implementation, this would call OpenRouter API)
-    setTimeout(() => {
-      const responses = {
-        coding: [
-          "I'd be happy to help you with your coding question! Could you share more details about what you're working on?",
-          "Let me analyze your code. Here are some suggestions for improvement...",
-          "This looks like a common pattern. Here's how I would approach it:",
-        ],
-        design: [
-          "Great design question! Let's think about the user experience here...",
-          "For this UI component, I'd recommend considering these design principles:",
-          "Here's a modern approach to this design challenge:",
-        ],
-        writing: [
-          "I can help you improve this content. Here are my suggestions:",
-          "Let's work on making this more engaging and clear:",
-          "For better documentation, consider structuring it this way:",
-        ],
-        devops: [
-          "For your deployment needs, here's what I recommend:",
-          "Let's set up a robust CI/CD pipeline for this project:",
-          "Here's how to optimize your infrastructure setup:",
-        ],
-        general: [
-          "That's an interesting question! Let me help you with that:",
-          "I can assist you with this task. Here's my approach:",
-          "Based on your request, here's what I suggest:",
-        ],
-      }
+    try {
+      // Use OpenRouter with Kimi model for AI responses
+      let aiResponse: string
 
-      const agentResponses = responses[selectedAgent.id as keyof typeof responses] || responses.general
-      const randomResponse = agentResponses[Math.floor(Math.random() * agentResponses.length)]
+      switch (selectedAgent.id) {
+        case 'coding':
+          aiResponse = await openRouterService.codeAssistant(inputMessage, 'General coding assistance')
+          break
+        case 'design':
+          aiResponse = await openRouterService.designAssistant(inputMessage)
+          break
+        case 'writing':
+          aiResponse = await openRouterService.writingAssistant(inputMessage, 'Improve and enhance content')
+          break
+        case 'devops':
+          aiResponse = await openRouterService.chat(
+            inputMessage,
+            'You are a DevOps expert. Help with deployment, CI/CD, infrastructure, and automation tasks.'
+          )
+          break
+        case 'general':
+        default:
+          aiResponse = await openRouterService.chat(
+            inputMessage,
+            'You are a helpful AI assistant. Provide clear, accurate, and useful responses.'
+          )
+          break
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: randomResponse,
+        content: aiResponse,
         timestamp: new Date(),
         agent: selectedAgent.id,
       }
 
       setMessages(prev => [...prev, assistantMessage])
+    } catch (error: any) {
+      console.error('AI response error:', error)
+      
+      // Fallback response if OpenRouter fails
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `I apologize, but I'm having trouble connecting to the AI service right now. Error: ${error.message}. Please check your OpenRouter API configuration and try again.`,
+        timestamp: new Date(),
+        agent: selectedAgent.id,
+      }
+
+      setMessages(prev => [...prev, fallbackMessage])
+    } finally {
       setIsLoading(false)
-    }, 1000 + Math.random() * 2000)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -316,7 +327,7 @@ export default function Chat({ windowId }: ChatProps) {
           
           <div className="flex items-center justify-between mt-2 text-xs text-os-text-muted">
             <span>Press Enter to send, Shift+Enter for new line</span>
-            <span>Powered by OpenRouter API</span>
+            <span>Powered by Moonshot AI Kimi via OpenRouter</span>
           </div>
         </div>
       </div>

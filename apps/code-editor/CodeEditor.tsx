@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import { FolderOpen, File, Save, Play, Bot, Settings } from 'lucide-react'
+import openRouterService from '@/services/openrouter'
 
 interface CodeEditorProps {
   windowId: string
