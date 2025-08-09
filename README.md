@@ -68,8 +68,8 @@ A powerful browser-based operating system interface with AI agents, code editor,
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd ai-os-mvp-kimi-production
+   git clone https://github.com/tarunerror/pullforgeOS.git
+   cd pullforgeOS
    ```
 
 2. **Install dependencies**
